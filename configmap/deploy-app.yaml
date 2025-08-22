@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demo
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1 # 동시에 새 Pod를 몇 개 더 만들지
+      maxUnavailable: 0 # 동시에 몇 개를 비워둘 수 있는지
+  template:
+    metadata:
+      labels:
+        app: demo
+    spec:
+      containers:
+        - name: demo
+          image: nginx:1.25-alpine
+          ports:
+            - containerPort: 80
+          env:
+            - name: APP_COLOR
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: APP_COLOR
+            - name: APP_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: APP_MODE
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_USER
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_PASS
