@@ -1,0 +1,21 @@
+# Init Container: 메인 컨테이너가 시작되기 전에 한 번 실행되는 준비 작업.
+# 여기서는 5초간 "DB 준비 대기"를 시뮬레이션한 뒤 nginx가 뜬다.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: init-demo
+  namespace: lab-pods
+spec:
+  initContainers:
+    - name: wait-for-db
+      image: busybox:1.36
+      command:
+        - sh
+        - -c
+        - "echo 'waiting for db...'; sleep 5; echo 'db is ready'"
+
+  containers:
+    - name: app
+      image: nginx:1.25-alpine
+      ports:
+        - containerPort: 80

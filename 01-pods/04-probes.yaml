@@ -1,0 +1,37 @@
+# Probe 3종 세트.
+# - startupProbe:   "초기 부팅 끝났니?" — 통과할 때까지 liveness/readiness를 미룬다.
+# - readinessProbe: "트래픽 받을 준비 됐니?" — 실패하면 Service 엔드포인트에서 빠진다.
+# - livenessProbe:  "아직 살아있니?" — 실패하면 컨테이너를 재시작한다.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: probes-demo
+  namespace: lab-pods
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.25-alpine
+      ports:
+        - containerPort: 80
+
+      startupProbe:
+        httpGet:
+          path: /
+          port: 80
+        # 30 * 2s = 최대 60초의 부팅 시간을 허용.
+        periodSeconds: 2
+        failureThreshold: 30
+
+      readinessProbe:
+        httpGet:
+          path: /
+          port: 80
+        periodSeconds: 5
+        failureThreshold: 3
+
+      livenessProbe:
+        httpGet:
+          path: /
+          port: 80
+        periodSeconds: 10
+        failureThreshold: 3
