@@ -100,6 +100,18 @@ kind delete cluster --name k8s-labs
 - kind 노드는 컨테이너이므로 `hostPath` 의 실체는 **노드 컨테이너 내부**다. 진짜 WSL 호스트에 보고 싶다면 kind `extraMounts` 설정이 필요.
 - `LoadBalancer` 타입 Service는 kind에서 기본 동작하지 않는다. Phase 3에서 `cloud-provider-kind` 로 해결한다.
 - 메모리가 부족해서 Pod이 `OOMKilled` 되거나 `Pending` 상태로 멈춘다면 Docker Desktop의 Resources에서 메모리를 4GB 이상으로 늘리자.
+- **`kind create cluster` 가 "Starting control-plane" 에서 멈춘다면** WSL2의 inotify 한도 문제일 가능성이 높다. 특히 다른 kind 클러스터(crossplane-poc 등)가 이미 떠 있을 때 자주 발생한다. 해결:
+
+  ```bash
+  # 한 번만 적용 (재부팅 시 초기화)
+  sudo sysctl fs.inotify.max_user_instances=512
+
+  # 영구 적용
+  echo "fs.inotify.max_user_instances = 512" | sudo tee /etc/sysctl.d/99-kind.conf
+  sudo sysctl --system
+  ```
+
+  멈춘 잔재를 먼저 정리(`kind delete cluster --name k8s-labs`)하고 재시도한다.
 
 ---
 
